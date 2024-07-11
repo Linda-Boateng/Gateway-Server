@@ -21,12 +21,17 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
   @Override
   public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+    String path = exchange.getRequest().getURI().getPath();
+    if (path.equals("/api/user/login") || path.equals("/api/user/register")) {
+      return chain.filter(exchange);
+    }
+
     String token = exchange.getRequest().getHeaders().getFirst("Authorization");
 
     if (token == null || !jwtService.validateToken(token)) {
       URI uri =
           UriComponentsBuilder.fromUri(exchange.getRequest().getURI())
-              .path("/login")
+              .path("/api/user/login")
               .build()
               .toUri();
       exchange.getResponse().setStatusCode(HttpStatus.SEE_OTHER);
